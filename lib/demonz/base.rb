@@ -18,27 +18,35 @@ configuration.load do
   set :stages, %w(staging production)
   set :default_stage, "staging"
 
+  # Set shared path to be inside app directory
+  set :shared_path, File.join(deploy_to, 'shared')
+
   # --------------------------------------------
   # Task chains
   # --------------------------------------------
+  after "multistage:ensure", "demonz:set_release_history"
   before "deploy", "demonz:set_release_info"
   before "deploy:finalize_update", "demonz:add_release_tracking"
   after "deploy:setup", "deploy:setup_shared"
   after "deploy:setup_shared", "deploy:setup_backup"
   after "deploy:finalize_update", "demonz:htaccess"
   after "deploy", "deploy:cleanup"
+  after "deploy:cleanup", "demonz:cleanup_release_tracking"
+  before "deploy:rollback", "demonz:set_rollback_release"
+  after "deploy:rollback", "demonz:update_release_tracking_for_rollback"
 
   # --------------------------------------------
   # Default variables
   # --------------------------------------------
   # SSH
   set :user,              proc{text_prompt("SSH username: ")}
+  set :group,             :user
   set :password,          proc{Capistrano::CLI.password_prompt("SSH password for '#{user}':")}
 
   # Database
-  set :dbuser,            proc{text_prompt("Database username: ")}
-  set :dbpass,            proc{Capistrano::CLI.password_prompt("Database password for '#{dbuser}':")}
-  set :dbname,            proc{text_prompt("Database name: ")}
+  # set :dbuser,            proc{text_prompt("Database username: ")}
+  # set :dbpass,            proc{Capistrano::CLI.password_prompt("Database password for '#{dbuser}':")}
+  # set :dbname,            proc{text_prompt("Database name: ")}
   _cset :mysqldump,       "mysqldump"
   _cset :dump_options,    "--single-transaction --create-options --quick"
 
@@ -49,7 +57,6 @@ configuration.load do
   set :scm_verbose,       true
   set :scm_username,      proc{text_prompt("Git username: ")}
   set :scm_password,      proc{Capistrano::CLI.password_prompt("Git password for '#{scm_username}': ")}
-  set :keep_releases,     5
   set :deploy_via,        :remote_cache
   set :copy_strategy,     :checkout
   set :copy_compression,  :bz2
@@ -75,21 +82,15 @@ configuration.load do
   # SASS compilation support (via compass)
   set :uses_sass,          false
 
-  # Database migration settings
-  set :db_local_host, "127.0.0.1"
-  set :db_local_user, "root"
-  set :db_local_name, proc{text_prompt("Local database name: #{db_local_name}: ")}
-  set :db_local_pass, proc{text_prompt("Local database password for: #{db_local_user}: ")}
-  set :db_remote_user, proc{text_prompt("Remote database user: #{db_remote_user}: ")}
-  set :db_remote_pass, proc{text_prompt("Remote database password for: #{db_remote_user}: ")}
-  set :db_remote_name, proc{text_prompt("Remote database name: #{db_remote_name}: ")}
-  set :db_remote_host, "localhost"
-
   # Add a dependency on compass and :themes if required
   if uses_sass
     depend :remote, :gem, "compass", ">=0.12"
     _cset(:themes) { abort "Please specify themes on this site, set :themes, ['theme1', 'theme2']" }
   end
+
+  # We need PHP and gzip
+  depend :remote, :command, "php"
+  depend :remote, :command, "gzip"
 
   # --------------------------------------------
   # Overloaded tasks
@@ -111,22 +112,15 @@ configuration.load do
       dirs = [deploy_to, releases_path, shared_path]
       dirs += shared_children.map { |d| File.join(shared_path, d.split('/').last) }
       run "#{try_sudo} mkdir -p #{dirs.join(' ')}"
-      run "#{try_sudo} chmod 755 #{dirs.join(' ')}" if fetch(:group_writable, true)
+      run "#{try_sudo} chmod 775 #{dirs.join(' ')}" if fetch(:group_writable, true)
       run "#{try_sudo} touch #{release_file}"
       run "#{try_sudo} chmod g+w #{release_file}" if fetch(:group_writable, true)
+      run "#{try_sudo} chown -R #{user}:#{group} #{deploy_to}"
     end
 
     desc "Setup backup directory for database and web files"
     task :setup_backup, :except => { :no_release => true } do
-      run "#{try_sudo} mkdir -p #{backups_path} #{tmp_backups_path} && #{try_sudo} chmod 755 #{backups_path}"
-    end
-
-    desc <<-DESC
-      Deprecated API. This has become deploy:create_symlink, please update your recipes
-    DESC
-    task :symlink, :except => { :no_release => true } do
-      logger.important "[Deprecation Warning] This API has changed, please hook `deploy:create_symlink` instead of `deploy:symlink`."
-      create_symlink
+      run "#{try_sudo} mkdir -p #{backups_path} #{tmp_backups_path} && #{try_sudo} chmod 775 #{backups_path} && #{try_sudo} chmod 775 #{tmp_backups_path}"
     end
 
     desc <<-DESC
@@ -140,12 +134,13 @@ configuration.load do
     DESC
     task :cleanup, :except => { :no_release => true } do
       count = fetch(:keep_releases, 5).to_i
-      local_releases = capture("ls -xt #{releases_path}").split.reverse
+      local_releases = get_release_history(release_file).split.reverse
       if count >= local_releases.length
         logger.important "no old releases to clean up"
       else
         logger.info "keeping #{count} of #{local_releases.length} deployed releases"
-        directories = (local_releases - local_releases.last(count)).map { |release|
+        set :cleanup_releases, (local_releases - local_releases.last(count))
+        directories = cleanup_releases.map { |release|
           File.join(releases_path, release) }.join(" ")
 
         directories.split(" ").each do |dir|
@@ -159,15 +154,26 @@ configuration.load do
 
     desc "Show deployment release history"
     task :history do
-      puts "Previous deployments (in ascending order)"
-      puts get_release_history()
+      logger.important "Previous deployments (in ascending order)"
+      history = get_release_history(release_file)
+
+      if history.empty?
+        logger.info "No previous deployments found"
+      else
+        logger.info history
+      end
     end
   end
 
   # --------------------------------------------
-  # Ash tasks
+  # Demonz tasks
   # --------------------------------------------
   namespace :demonz do
+    desc "[internal] Set release history"
+    task :set_release_history, :roles => :web, :except => { :no_release => true } do
+      set :releases, get_release_history(release_file).split
+    end
+
     desc "Set standard permissions for Demonz servers"
     task :fixperms, :roles => :web, :except => { :no_release => true } do
       # chmod the files and directories.
@@ -215,45 +221,78 @@ configuration.load do
     end
 
     desc "[internal] Set release info (such as release name and git tag)"
-    task :set_release_info do
+    task :set_release_info, :roles => :web, :except => { :no_release => true } do
       # Get all Git tags from local repository
       all_tags = %x[git for-each-ref --sort='*authordate' --format='%(refname:short)' refs/tags].split
 
       # Error out if not tags
-      if all_tags.empty?
-        raise Capistrano::Error, "No Git tags found, please define some before attempting deployment"
-      end
-
-      # Get release history
-      set :releases, get_release_history().split
+      # if all_tags.empty?
+      #   raise Capistrano::Error, "No Git tags found, please define some before attempting deployment"
+      # end
 
       # We're not using pure timestamps to track deployment anymore
       set :deploy_timestamped, false
 
-      if variables.include?(:tag) && all_tags.include?(tag)
-        puts "Deploying using Git tag '#{tag}'"
-        clean_tag = tag.gsub("/", "-")
+      if variables.include?(:tag) && !all_tags.empty? && all_tags.include?(tag)
+        logger.info "deploying using Git tag '#{tag}'"
 
-        # If the release directory already exists, append timestamp
-        if remote_file_exists?(File.join(releases_path, clean_tag, 'REVISION'))
-          clean_tag += '--' + Time.now.utc.strftime("%Y%m%d%H%M%S")
-        end
-
-        set :release_name, clean_tag
         # Set revision to the commit that :tag points to
         set :revision, run_locally("git rev-list #{tag} | head -n 1")
+
+        # Slashes are bad in directory names
+        clean_tag = tag.gsub("/", "-")
       else
-        puts "No valid Git tag specified, continuing with HEAD instead"
-        set :release_name, "release_" + Time.now.utc.strftime("%Y%m%d%H%M%S")
+        logger.important "no valid Git tag specified, continuing with HEAD instead"
+
+        # Get tag from user
+        tag = text_prompt("Please specify a tag name for this release (this will be created): ")
+        logger.info "setting release tag to #{tag}"
+
+        # Slashes are bad in directory names
+        clean_tag = tag.gsub("/", "-")
+
+        # Try to add tag to git
         if ! system "git tag #{release_name}"
           raise Capistrano::Error, "Failed to Git tag: #{release_name}"
         end
       end
+
+      # If the release directory already exists, append timestamp
+      if remote_file_exists?(File.join(releases_path, clean_tag, 'REVISION'))
+        clean_tag += '-' + Time.now.utc.strftime("%Y%m%d%H%M%S")
+        logger.important "previous deployment with this tag found, setting current release name to #{clean_tag}"
+      end
+
+      set :release_name, clean_tag
+      set :latest_release, release_path
     end
 
     desc "[internal] Keep track of the current release"
-    task :add_release_tracking do
+    task :add_release_tracking, :roles => :web, :except => { :no_release => true } do
+      on_rollback { remove_release_from_history(release_name, release_file) }
       run "#{try_sudo} echo #{release_name} >> #{release_file}"
+    end
+
+    desc "[internal] Cleanup release tracking"
+    task :cleanup_release_tracking, :roles => :web, :except => { :no_release => true } do
+      if variables.include?(:cleanup_releases)
+        cleanup_releases = fetch(:cleanup_releases, nil)
+
+        if !cleanup_releases.nil?
+          files_backups = cleanup_releases.map { |release|
+            remove_release_from_history(release, release_file) }
+        end
+      end
+    end
+
+    desc "[internal] Set last release name for rollback"
+    task :set_rollback_release, :except => { :no_release => true } do
+      set :release_name, releases.last
+    end
+
+    desc "[internal] Remove rollback release from release tracking"
+    task :update_release_tracking_for_rollback, :except => { :no_release => true } do
+      remove_release_from_history(release_name, release_file)
     end
   end
 
@@ -376,7 +415,7 @@ configuration.load do
     DESC
     task :web, :roles => :web do
       if previous_release
-        puts "Backing up web files (user uploaded content and previous release)"
+        logger.info "Backing up web files (user uploaded content and previous release)"
 
         if !backup_exclude.nil? && !backup_exclude.empty?
           logger.debug "processing backup exclusions..."
@@ -415,7 +454,7 @@ configuration.load do
         mysqldump     = fetch(:mysqldump, "mysqldump")
         dump_options  = fetch(:dump_options, "--single-transaction --create-options --quick")
 
-        puts "Backing up the database now and putting dump file in the previous release directory"
+        logger.info "Backing up the database now and putting dump file in the previous release directory"
         # define the filename (include the current_path so the dump file will be within the directory)
         filename = "#{current_path}/#{dbname}_dump-#{Time.now.to_s.gsub(/ /, "_")}.sql.gz"
         # dump the database for the proper environment
@@ -435,21 +474,22 @@ configuration.load do
       for your environment, set the :use_sudo variable to false instead.
     DESC
     task :cleanup, :except => { :no_release => true } do
-      count = fetch(:keep_releases, 5).to_i
-      local_releases = get_release_history().split.reverse
-      if count >= local_releases.length
-        logger.important "no old releases to clean up"
+      count = fetch(:keep_backups, 10).to_i
+      if count >= backups.length
+        logger.important "no old backups to clean up"
       else
-        logger.info "keeping #{count} of #{local_releases.length} deployed releases"
-        directories = (local_releases - local_releases.last(count)).map { |release|
-          File.join(releases_path, release) }.join(" ")
+        logger.info "keeping #{count} of #{backups.length} backups"
 
-        directories.split(" ").each do |dir|
-          set_perms_dirs(dir)
-          set_perms_files(dir)
+        archives = (backups - backups.last(count)).map { |backup|
+          File.join(backups_path, backup) }.join(" ")
+
+        # fix permissions on the the files and directories before removing them
+        archives.split(" ").each do |backup|
+          set_perms_dirs("#{backup}", 755)
+          set_perms_files("#{backup}", 644)
         end
 
-        try_sudo "rm -rf #{directories}"
+        try_sudo "rm -rf #{archives}"
       end
     end
   end
