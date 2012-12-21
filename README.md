@@ -16,7 +16,7 @@ Make sure you have ruby and RubyGems installed, then run (you may need to prefix
 
 In your Drupal application's directory, run:
 
-    $ gem capify .
+    $ capify .
 
 This will create two files, a `Capfile` in the root and `config/deploy.rb`.
 
