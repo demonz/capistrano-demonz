@@ -44,7 +44,7 @@ end
 
 # Get release history from server as string
 def get_release_history(release_file)
-  release_history = capture("cat #{release_file}").strip
+  release_history = remote_file_exists?(release_file) ? capture("cat #{release_file}").strip : ''
   release_history
 end
 

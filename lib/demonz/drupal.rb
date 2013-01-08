@@ -194,6 +194,17 @@ configuration.load do
       end
     end
 
+    desc "Compile SASS (using Compass) for this release"
+    task :compile_sass, :roles => :web, :except => { :no_release => true } do
+      themes = fetch(:themes, [])
+      themes.each do |theme|
+        theme_path = File.join(latest_release, 'sites', 'all', 'themes', theme)
+        compass_config = File.join(theme_path, 'config.rb')
+        run "/bin/bash -c 'source ~/.bash_profile; cd #{theme_path}; compass clean;'"
+        run "/bin/bash -c 'source ~/.bash_profile; cd #{theme_path}; compass compile -c #{compass_config} --force --output-style compressed;'"
+      end
+    end
+
     desc "Symlink shared directories"
     task :symlink, :roles => :web, :except => { :no_release => true } do
       uses_boost = fetch(:uses_boost, false)
@@ -230,9 +241,13 @@ configuration.load do
 
     desc "Migrate old database to new release"
     task :migrate, :roles => :web, :except => { :no_release => true } do
+      uses_sass = fetch(:uses_sass, false)
+
       create_db
       copy_old_to_new_db
       run_update_scripts
+      compile_sass if uses_sass
+
       # Run drush updb just incase
       run "#{drush_bin} -r #{latest_release} updb"
     end
@@ -242,7 +257,7 @@ configuration.load do
       set :archive_name, "files_before_#{release_name}.tar.gz"
       set :files_dir_location, File.join(shared_path, 'default')
       logger.debug "Creating a Tarball of the files directory in #{backups_path}/#{archive_name}"
-      run "cd #{files_dir_location} && tar -cvpf - files | gzip -c --best > #{backups_path}/#{archive_name}"
+      run "cd #{files_dir_location} && tar -cvpf - files | #{try_sudo} gzip -c --best > #{backups_path}/#{archive_name}"
     end
 
     desc "Clear all Drupal cache"

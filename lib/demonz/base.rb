@@ -14,10 +14,6 @@ configuration = Capistrano::Configuration.respond_to?(:instance) ?
 
 configuration.load do
 
-  # Set default stages
-  set :stages, %w(staging production)
-  set :default_stage, "staging"
-
   # Set shared path to be inside app directory
   set :shared_path, File.join(deploy_to, 'shared')
 
@@ -40,7 +36,6 @@ configuration.load do
   # --------------------------------------------
   # SSH
   set :user,              proc{text_prompt("SSH username: ")}
-  set :group,             :user
   set :password,          proc{Capistrano::CLI.password_prompt("SSH password for '#{user}':")}
 
   # Database
@@ -61,7 +56,7 @@ configuration.load do
   set :copy_strategy,     :checkout
   set :copy_compression,  :bz2
   set :copy_exclude,      [".svn", ".DS_Store", "*.sample", "LICENSE*", "Capfile",
-    "RELEASE*", "*.rb", "*.sql", "nbproject", "_template", "*.sublime*"]
+    "RELEASE*", "*.sql", "nbproject", "_template", "*.sublime*"]
 
   # Backups Path
   _cset(:backups_path)      { File.join(deploy_to, "backups") }
@@ -79,10 +74,8 @@ configuration.load do
   # Release tracking
   set :release_file,       File.join(shared_path, "RELEASES")
 
-  # SASS compilation support (via compass)
-  set :uses_sass,          false
-
   # Add a dependency on compass and :themes if required
+  uses_sass = fetch(:uses_sass, false)
   if uses_sass
     depend :remote, :gem, "compass", ">=0.12"
     _cset(:themes) { abort "Please specify themes on this site, set :themes, ['theme1', 'theme2']" }
@@ -120,7 +113,7 @@ configuration.load do
 
     desc "Setup backup directory for database and web files"
     task :setup_backup, :except => { :no_release => true } do
-      run "#{try_sudo} mkdir -p #{backups_path} #{tmp_backups_path} && #{try_sudo} chmod 775 #{backups_path} && #{try_sudo} chmod 775 #{tmp_backups_path}"
+      run "#{try_sudo} mkdir -p #{backups_path} #{tmp_backups_path} && #{try_sudo} chmod 775 #{backups_path} && #{try_sudo} chmod 775 #{tmp_backups_path} && #{try_sudo} chown -R #{user}:#{group} #{backups_path}"
     end
 
     desc <<-DESC
@@ -252,8 +245,8 @@ configuration.load do
         clean_tag = tag.gsub("/", "-")
 
         # Try to add tag to git
-        if ! system "git tag #{release_name}"
-          raise Capistrano::Error, "Failed to Git tag: #{release_name}"
+        if ! system "git tag #{clean_tag}"
+          raise Capistrano::Error, "Failed to Git tag: #{clean_tag}"
         end
       end
 
