@@ -2,7 +2,15 @@
 
 Capistrano recipes developed for use by [Demonz Media](http://demonzmedia.com).
 
-**Current version:** 0.0.5
+**Current version:** 0.0.7
+
+## Changes
+### 0.0.6/0.0.7
+* Fixed a number of bugs and default settings issues.
+* Added automated Compass (SASS) compilation
+
+### 0.0.5
+* Initial stable release
 
 Only includes a Drupal recipe for now.
 
