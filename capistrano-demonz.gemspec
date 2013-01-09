@@ -8,7 +8,7 @@ Gem::Specification.new do |gem|
   gem.version       = Capistrano::Demonz::VERSION
   gem.authors       = ["Chinthaka Godawita"]
   gem.email         = ["chinthaka.godawita@demonzmedia.com"]
-  gem.description   = "Demonz Media recipes for Capistrano"
+  gem.description   = "Demonz Media recipes for Capistrano (for Drupal and other web apps)."
   gem.summary       = "Useful task libraries for Demonz Media recipes for Capistrano"
   gem.homepage      = "https://github.com/demonz/capistrano-demonz"
 

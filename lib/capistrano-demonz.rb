@@ -2,6 +2,6 @@ require "capistrano-demonz/version"
 
 module Capistrano
   module Demonz
-    # Your code goes here...
+    # Nothing here, see demonz/base.
   end
 end
