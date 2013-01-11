@@ -39,7 +39,7 @@ require 'capistrano/ext/multistage'
 require 'demonz/drupal'
 ```
 
-Open up `deploy.rb` and replace with:
+Open up `config/deploy.rb` and replace with:
 
 ```ruby
 set :stages, %w(production staging)
