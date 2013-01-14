@@ -2,9 +2,12 @@
 
 Capistrano recipes developed for use by [Demonz Media](http://demonzmedia.com).
 
-**Current version:** 0.0.11
+**Current version:** 0.0.12
 
 ## Changes ##
+### 0.0.12 ###
+* Fixed issue where update scripts weren't executable by the group.
+
 ### 0.0.11 ###
 * Fixed 'current' symlink deletion in deploy:delete_release.
 

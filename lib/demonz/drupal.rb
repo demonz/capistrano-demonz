@@ -258,6 +258,8 @@ configuration.load do
       update_script_file = File.join(latest_release, 'sites', 'all', 'scripts', release_name, 'update.sh')
 
       if remote_file_exists?(update_script_file)
+        # Make sure script is executable.
+        run "#{try_sudo} g+x #{update_script_file}"
         run update_script_file
       end
     end
