@@ -106,6 +106,12 @@ Additionally, if this is a fresh deployment, the script will prompt you for a gz
 
     $ drush sql-dump --result-file --gzip
 
+Deployment will run, if available, a specific release script located here `/var/www/mysite.com/releases/<mygittag>/sites/all/scripts/<mygittag>/update.sh`
+
+To delete completely a delivered release:
+
+    $ cap deploy:delete_release RELEASE='mygittag'
+    
 And that's it!
 
 ## Contributing
