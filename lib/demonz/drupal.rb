@@ -259,14 +259,14 @@ configuration.load do
 
       if remote_file_exists?(update_script_file)
         # Make sure script is executable.
-        run "#{try_sudo} chmod g+x #{update_script_file}"
-        run update_script_file
+        run "#{try_sudo} chmod go+x #{update_script_file}"
+        run "cd #{latest_release} && #{update_script_file}"
       end
     end
 
     desc "Set release name for site"
     task :update_visible_release_name, :roles => :web, :except => { :no_release => true } do
-      run "#{drush_bin} -r #{latest_release} vset --yes site_release_version `git describe --tags`"
+      run "cd #{latest_release} && #{drush_bin} -r #{latest_release} vset --yes site_release_version `git describe --tags`"
     end
 
     desc "Compile SASS (using Compass) for this release"
