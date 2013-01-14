@@ -2,9 +2,12 @@
 
 Capistrano recipes developed for use by [Demonz Media](http://demonzmedia.com).
 
-**Current version:** 0.0.9
+**Current version:** 0.0.10
 
 ## Changes ##
+### 0.0.10 ###
+* Fixed issue where incorrect database names were being generated.
+
 ### 0.0.9 ###
 * Release name is now set in a Drupal variable ('site_release_name') post-migrate.
 

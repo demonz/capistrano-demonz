@@ -62,7 +62,7 @@ end
 
 # Get the database name given an application and release name
 def get_db_name(application, release)
-  db_name = "#{application}__#{release_name}"
+  db_name = "#{application}__#{release}"
   # Remove characters that may cause MySQL issues
   db_name.downcase.gsub(/([\.\-\/])/, '_')
 end
