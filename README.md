@@ -2,9 +2,12 @@
 
 Capistrano recipes developed for use by [Demonz Media](http://demonzmedia.com).
 
-**Current version:** 0.0.10
+**Current version:** 0.0.11
 
 ## Changes ##
+### 0.0.11 ###
+* Fixed 'current' symlink deletion in deploy:delete_release.
+
 ### 0.0.10 ###
 * Fixed issue where incorrect database names were being generated.
 

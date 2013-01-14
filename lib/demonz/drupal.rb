@@ -82,10 +82,12 @@ configuration.load do
       if removed_release.nil?
         logger.important "no release specified, using latest release instead"
         removed_release = releases.last
+      end
 
+      if removed_release == releases.last
         # Keep track of some extra variables for this special case.
         delete_latest = true
-        prior_release = releases[-2]
+        prior_release = releases.length > 1 ? releases[-2] : nil
       end
 
       # Prevent heart attacks.
