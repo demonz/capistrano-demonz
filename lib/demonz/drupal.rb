@@ -73,6 +73,72 @@ configuration.load do
       run "#{try_sudo} rm -Rf #{latest_release}/sites/default/files"
     end
 
+    desc "Delete a specified release"
+    task :delete_release, :roles => :web do
+      removed_release = ENV['RELEASE'] || fetch(:release, nil)
+      delete_latest = false
+
+      # If no release specified, use latest.
+      if removed_release.nil?
+        logger.important "no release specified, using latest release instead"
+        removed_release = releases.last
+
+        # Keep track of some extra variables for this special case.
+        delete_latest = true
+        prior_release = releases[-2]
+      end
+
+      # Prevent heart attacks.
+      confirm_deletion = text_prompt("About to delete release '#{removed_release}', continue? (Y/n) ").downcase
+      raise Capistrano::Error, "User unsure, exiting." if confirm_deletion != 'y'
+
+      removal_path = File.join(releases_path, removed_release)
+      removed_db_file = File.join(tmp_backups_path, "#{removed_release}.sql.gz")
+
+      logger.info "backing up to '#{tmp_backups_path}"
+      logger.important "this backup is temporary, please make sure you move it elsewhere if you need it!"
+      run "#{drush_bin} -r #{removal_path} sql-dump | gzip -c --best > #{removed_db_file}"
+      logger.info "database backed up"
+
+      if (delete_latest)
+        set :latest_release, :previous_release
+        set :previous_release, releases.length > 2 ? File.join(releases_path, releases[-3]) : nil
+
+        # Backup files dir.
+        removed_files_bak = File.join(tmp_backups_path, "#{removed_release}.files.tar.gz")
+        files_dir_location = File.join(shared_path, 'default')
+        run "cd #{files_dir_location} && tar -cvpf - files | #{try_sudo} gzip -c --best > #{removed_files_bak}"
+        logger.info "files directory backed up"
+
+        # Update 'current' symlink to previous release if removing latest.
+        if previous_release.nil?
+          logger.info "no previous release detected, removing symlink"
+          run "#{try_sudo} rm -f #{current_path}"
+        else
+          logger.info "updating symlink to point to previous release"
+          symlink
+
+          # Restore previous files dir.
+          previous_files_bak = File.join(backups_path, "files_before_#{removed_release}.tar.gz")
+          if remote_file_exists?(previous_files_bak)
+            logger.info "restoring previous files backup"
+            run "cd #{files_dir_location} && #{try_sudo} tar -xvpzf #{previous_files_bak}"
+          end
+        end
+      end
+
+      # Remove database.
+      mysql_connection = capture("#{drush_bin} -r #{removal_path} sql-connect").chomp
+      removed_db_name = get_db_name(application, removed_release)
+      delete_database(mysql_connection, removed_db_name)
+      logger.info "removed database"
+
+      # Remove code and release from the release file
+      run "#{try_sudo} rm -rf #{removal_path}; true"
+      remove_release_from_history(removed_release, release_file)
+      logger.info "removed release"
+    end
+
     namespace :web do
       desc "Disable the application and show a message screen"
       task :disable, :roles => :web do

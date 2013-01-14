@@ -2,9 +2,12 @@
 
 Capistrano recipes developed for use by [Demonz Media](http://demonzmedia.com).
 
-**Current version:** 0.0.7
+**Current version:** 0.0.8
 
-## Changes
+## Changes ##
+### 0.0.8 ###
+* Added 'deploy:delete_release' for the Drupal recipe, lets you remove a specific release (and cleanup as required).
+
 ### 0.0.6/0.0.7
 * Fixed a number of bugs and default settings issues.
 * Added automated Compass (SASS) compilation
