@@ -259,7 +259,7 @@ configuration.load do
 
       if remote_file_exists?(update_script_file)
         # Make sure script is executable.
-        run "#{try_sudo} g+x #{update_script_file}"
+        run "#{try_sudo} chmod g+x #{update_script_file}"
         run update_script_file
       end
     end

@@ -2,10 +2,13 @@
 
 Capistrano recipes developed for use by [Demonz Media](http://demonzmedia.com).
 
-**Current version:** 0.0.12
+**Current version:** 0.0.13
 
 ## Changes ##
-### 0.0.12 ###
+### 0.0.13 ###
+* Fixes stupid issue where 'chmod' wasn't included in previous fix.
+
+### 0.0.12 (yanked) ###
 * Fixed issue where update scripts weren't executable by the group.
 
 ### 0.0.11 ###
