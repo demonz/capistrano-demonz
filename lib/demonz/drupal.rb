@@ -260,6 +260,11 @@ configuration.load do
       end
     end
 
+    desc "Set release name for site"
+    task :update_visible_release_name, :roles => :web, :except => { :no_release => true } do
+      run "#{drush_bin} -r #{latest_release} vset --yes site_release_version `git describe --tags`"
+    end
+
     desc "Compile SASS (using Compass) for this release"
     task :compile_sass, :roles => :web, :except => { :no_release => true } do
       themes = fetch(:themes, [])
@@ -312,6 +317,7 @@ configuration.load do
       create_db
       copy_old_to_new_db
       run_update_scripts
+      update_visible_release_name
       compile_sass if uses_sass
 
       # Run drush updb just incase
