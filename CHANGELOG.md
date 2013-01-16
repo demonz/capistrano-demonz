@@ -1,6 +1,9 @@
-**Current version:** 0.0.14
+**Current version:** 0.0.15
 
 ## Changes ##
+### 0.0.15 ###
+* Fixed issue where update script could sometimes not have enough permission to run.
+
 ### 0.0.14 ###
 * Moved changelog into CHANGELOG.md
 * Update script ('sites/all/scripts/{release}/update.sh') is now executable by owner

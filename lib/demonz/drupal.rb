@@ -260,7 +260,7 @@ configuration.load do
       if remote_file_exists?(update_script_file)
         # Make sure script is executable.
         run "#{try_sudo} chmod go+x #{update_script_file}"
-        run "cd #{latest_release} && #{update_script_file}"
+        run "cd #{latest_release} && #{try_sudo} #{update_script_file}"
       end
     end
 

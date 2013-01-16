@@ -42,7 +42,7 @@ rm capistrano-demonz-*.gem
 gem build capistrano-demonz.gemspec
 VERSION=`ls capistrano-demonz-*.gem | sed 's/[^0-9.]*\([0-9.]*\).*/\1/'`
 VERSION=${VERSION%?}
-sudo gem install "capistrano-demonz-$VERSION.gem"
+gem install "capistrano-demonz-$VERSION.gem"
 if [[ $push == true ]]; then
   gem push "capistrano-demonz-$VERSION.gem"
 fi
