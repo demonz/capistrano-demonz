@@ -109,7 +109,7 @@ configuration.load do
         # Backup files dir.
         removed_files_bak = File.join(tmp_backups_path, "#{removed_release}.files.tar.gz")
         files_dir_location = File.join(shared_path, 'default')
-        run "cd #{files_dir_location} && tar -cvpf - files | #{try_sudo} gzip -c --best > #{removed_files_bak}"
+        run "cd #{files_dir_location} && tar -cpf - files | #{try_sudo} gzip -c --best > #{removed_files_bak}"
         logger.info "files directory backed up"
 
         # Update 'current' symlink to previous release if removing latest.
@@ -124,7 +124,7 @@ configuration.load do
           previous_files_bak = File.join(backups_path, "files_before_#{removed_release}.tar.gz")
           if remote_file_exists?(previous_files_bak)
             logger.info "restoring previous files backup"
-            run "cd #{files_dir_location} && #{try_sudo} tar -xvpzf #{previous_files_bak}"
+            run "cd #{files_dir_location} && #{try_sudo} tar -xpzf #{previous_files_bak}"
           end
         end
       end
@@ -259,8 +259,8 @@ configuration.load do
 
       if remote_file_exists?(update_script_file)
         # Make sure script is executable.
-        run "#{try_sudo} chmod go+x #{update_script_file}"
-        run "cd #{latest_release} && #{try_sudo} #{update_script_file}"
+        run "#{try_sudo} chmod ug+x #{update_script_file}"
+        run "cd #{latest_release} && #{update_script_file}"
       end
     end
 
@@ -325,7 +325,7 @@ configuration.load do
       compile_sass if uses_sass
 
       # Run drush updb just incase
-      run "#{drush_bin} -r #{latest_release} updb"
+      run "#{drush_bin} -r #{latest_release} updb -y"
     end
 
     desc "Backup the shared 'files' directory"
@@ -333,7 +333,7 @@ configuration.load do
       set :archive_name, "files_before_#{release_name}.tar.gz"
       set :files_dir_location, File.join(shared_path, 'default')
       logger.debug "Creating a Tarball of the files directory in #{backups_path}/#{archive_name}"
-      run "cd #{files_dir_location} && tar -cvpf - files | #{try_sudo} gzip -c --best > #{backups_path}/#{archive_name}"
+      run "cd #{files_dir_location} && tar -cpf - files | #{try_sudo} gzip -c --best > #{backups_path}/#{archive_name}"
     end
 
     desc "Clear all Drupal cache"
@@ -376,11 +376,11 @@ configuration.load do
 
           on_rollback {
             run "#{try_sudo} rm #{files_dir}" if remote_file_exists?(files_dir_backup_archive) && remote_dir_exists?(files_dir)
-            run "#{try_sudo} tar -xvzf #{files_dir_backup_archive} -C #{files_dir_location}" if remote_file_exists?(files_dir_backup_archive)
+            run "#{try_sudo} tar -xzf #{files_dir_backup_archive} -C #{files_dir_location}" if remote_file_exists?(files_dir_backup_archive)
           }
 
-          run "cd #{files_dir_location} && tar -cvpf - files | gzip -c --best > #{backups_path}/#{files_dir_backup_archive}"
-          run "#{try_sudo} tar -xvzf #{files_backup_file} -C #{files_dir_location}"
+          run "cd #{files_dir_location} && tar -cpf - files | gzip -c --best > #{backups_path}/#{files_dir_backup_archive}"
+          run "#{try_sudo} tar -xzf #{files_backup_file} -C #{files_dir_location}"
         end
       else
         abort "could not rollback the code because there is no prior release"

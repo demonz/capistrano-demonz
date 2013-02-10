@@ -1,6 +1,10 @@
-**Current version:** 0.0.15
+**Current version:** 0.0.16
 
 ## Changes ##
+### 0.0.16 ###
+* Fixed critical issue where cleanup script was deleting the _newest_ version instead of the _oldest_ one.
+* The release delete function wasn't actually joining arrays with newline separators.
+
 ### 0.0.15 ###
 * Fixed issue where update script could sometimes not have enough permission to run.
 

@@ -127,7 +127,7 @@ configuration.load do
     DESC
     task :cleanup, :except => { :no_release => true } do
       count = fetch(:keep_releases, 5).to_i
-      local_releases = get_release_history(release_file).split.reverse
+      local_releases = get_release_history(release_file).split
       if count >= local_releases.length
         logger.important "no old releases to clean up"
       else
