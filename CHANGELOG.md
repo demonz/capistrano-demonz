@@ -1,6 +1,9 @@
-**Current version:** 0.0.16
+**Current version:** 0.0.17
 
 ## Changes ##
+### 0.0.17 ###
+* Fixed newline issue when writing out release_history.
+
 ### 0.0.16 ###
 * Fixed critical issue where cleanup script was deleting the _newest_ version instead of the _oldest_ one.
 * The release delete function wasn't actually joining arrays with newline separators.

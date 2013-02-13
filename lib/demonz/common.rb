@@ -57,7 +57,7 @@ def remove_release_from_history(release, release_file)
 
   # Save
   release_history = release_history.join("\n")
-  try_sudo "printf #{release_history} > #{release_file}"
+  try_sudo "printf \"#{release_history}\" > #{release_file}"
 end
 
 # Get the database name given an application and release name
