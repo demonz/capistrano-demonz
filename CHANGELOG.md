@@ -1,6 +1,9 @@
-**Current version:** 0.0.18
+**Current version:** 0.0.19
 
 ## Changes ##
+### 0.0.19 ###
+* Removed 'grant' SQL query during database creation (redundant, if you can create a database, you should be able to access it!).
+
 ### 0.0.18 ###
 * Changed database name pattern to match new AWS server database pattern.
 
