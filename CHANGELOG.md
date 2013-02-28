@@ -1,6 +1,9 @@
-**Current version:** 0.0.19
+**Current version:** 0.0.20
 
 ## Changes ##
+### 0.0.20 ###
+* Fixed logic issue from previous fix.
+
 ### 0.0.19 ###
 * Removed 'grant' SQL query during database creation (redundant, if you can create a database, you should be able to access it!).
 

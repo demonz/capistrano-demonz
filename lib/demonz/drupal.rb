@@ -216,7 +216,7 @@ configuration.load do
         on_rollback { delete_database(mysql_connection, clean_db_name) }
 
         create_database(mysql_connection, clean_db_name)
-        setup_database_permissions(mysql_connection, clean_db_name)
+        # setup_database_permissions(mysql_connection, clean_db_name)
       end
 
       # Add the database name to the settings file.

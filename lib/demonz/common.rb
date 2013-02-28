@@ -118,9 +118,9 @@ def setup_database_permissions(connection_string, db_name)
   db_admin_password = connection_string.match db_string_regex('password')
   db_admin_password = db_admin_password[1]
 
-  # grant_sql = <<-SQL
-  #   GRANT ALL PRIVILEGES ON #{db_name}.* TO #{db_admin_user}@localhost IDENTIFIED BY '#{db_admin_password}';
-  # SQL
+  grant_sql = <<-SQL
+    GRANT ALL PRIVILEGES ON #{db_name}.* TO #{db_admin_user}@localhost IDENTIFIED BY '#{db_admin_password}';
+  SQL
 
   run "#{connection_string} --execute=\"#{grant_sql}\""
 end
