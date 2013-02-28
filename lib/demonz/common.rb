@@ -62,9 +62,12 @@ end
 
 # Get the database name given an application and release name
 def get_db_name(application, release)
-  db_name = "#{application}__#{release}"
-  # Remove characters that may cause MySQL issues
-  db_name.downcase.gsub(/([\.\-\/])/, '_')
+  # Match possible db username (max 16 chars) and,
+  # remove characters that may cause MySQL issues
+  clean_application_name = application.downcase.gsub(/([\.\-\/])/, '').slice(0, 16)
+  clean_release_name = release.downcase.gsub(/([\.\-\/])/, '_')
+
+  db_name = "#{clean_application_name}__#{clean_release_name}"
 end
 
 # Get the regex pattern to extract details from the mysql connection string

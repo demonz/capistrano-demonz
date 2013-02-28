@@ -1,6 +1,9 @@
-**Current version:** 0.0.17
+**Current version:** 0.0.18
 
 ## Changes ##
+### 0.0.18 ###
+* Changed database name pattern to match new AWS server database pattern.
+
 ### 0.0.17 ###
 * Fixed newline issue when writing out release_history.
 
