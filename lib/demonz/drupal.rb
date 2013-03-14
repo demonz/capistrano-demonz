@@ -70,7 +70,12 @@ configuration.load do
 
     desc "[internal] Touches up the released code. This is called by update_code after the basic deploy finishes."
     task :finalize_update, :roles => :web, :except => { :no_release => true } do
+      # Remove the files directory if it exists
+      # (we'll be symlinking the shared one later).
       run "#{try_sudo} rm -Rf #{latest_release}/sites/default/files"
+
+      # Make sure the 'sites/default' directory exists.
+      run "#{try_sudo} mkdir -p #{latest_release}/sites/default"
     end
 
     desc "Delete a specified release"

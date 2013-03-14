@@ -1,6 +1,9 @@
-**Current version:** 0.0.20
+**Current version:** 0.0.21
 
 ## Changes ##
+### 0.0.21 ###
+* The 'sites/default' directory is now created if it doesn't exist.
+
 ### 0.0.20 ###
 * Fixed logic issue from previous fix.
 
