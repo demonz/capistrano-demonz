@@ -1,6 +1,9 @@
-**Current version:** 0.0.21
+**Current version:** 0.0.22
 
 ## Changes ##
+### 0.0.22 ###
+* The settings.php file token replacement is now done with the correct permissions.
+
 ### 0.0.21 ###
 * The 'sites/default' directory is now created if it doesn't exist.
 

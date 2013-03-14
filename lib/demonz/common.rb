@@ -127,5 +127,5 @@ end
 
 # Updates the Drupal settings file with the new database name
 def update_db_in_settings_file(settings_file, db_name)
-  run "sed -ri \"/^[ \\t]*(#|\\*|\\/)/! s/'database' => ''/'database' => '#{db_name}'/1\" #{settings_file}"
+  run "#{try_sudo} sed -ri \"/^[ \\t]*(#|\\*|\\/)/! s/'database' => ''/'database' => '#{db_name}'/1\" #{settings_file}"
 end
