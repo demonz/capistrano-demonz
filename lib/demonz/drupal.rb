@@ -399,7 +399,7 @@ configuration.load do
 
         if !cleanup_releases.nil?
           files_backups = cleanup_releases.map { |release|
-            File.join(backups_path, "file_before_#{release}.tar.gz") }.join(" ")
+            File.join(backups_path, "files_before_#{release}.tar.gz") }.join(" ")
           try_sudo "rm -rf #{files_backups}"
         end
       end
