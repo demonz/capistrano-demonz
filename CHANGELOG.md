@@ -1,6 +1,9 @@
-**Current version:** 0.0.22
+**Current version:** 0.0.23
 
 ## Changes ##
+### 0.0.23 ###
+* Fixes newline issue on rolling back the RELEASES file.
+
 ### 0.0.22 ###
 * The settings.php file token replacement is now done with the correct permissions.
 

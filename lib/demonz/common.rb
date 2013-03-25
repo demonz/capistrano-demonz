@@ -56,8 +56,15 @@ def remove_release_from_history(release, release_file)
   release_history.delete_at release_history.index(release) unless release_history.index(release).nil?
 
   # Save
-  release_history = release_history.join("\n")
-  try_sudo "printf \"#{release_history}\" > #{release_file}"
+  first_rel = true
+  release_history.each do |rel|
+    if first_rel
+      try_sudo "echo '#{rel}' > #{release_file}"
+      first_rel = false
+    else
+      try_sudo "echo '#{rel}' >> #{release_file}"
+    end
+  end
 end
 
 # Get the database name given an application and release name
