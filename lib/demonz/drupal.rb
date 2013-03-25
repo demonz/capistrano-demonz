@@ -317,6 +317,9 @@ configuration.load do
         else
           logger.important "Failed to symlink the settings.php file in #{drupal_app_site_dir} because an unknown pattern was used"
       end
+
+      # Make sure the user owns it
+      run "#{try_sudo} chown -R #{user}:#{group} #{drupal_app_site_dir}/settings.php"
     end
 
     desc "Migrate old database to new release"
