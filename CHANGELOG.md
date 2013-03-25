@@ -1,6 +1,9 @@
-**Current version:** 0.0.25
+**Current version:** 0.0.26
 
 ## Changes ##
+### 0.0.26 ###
+* Fixes mixup between file and directory permissions.
+
 ### 0.0.25 ###
 * Further fixing of group permissions.
 

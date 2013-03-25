@@ -170,8 +170,8 @@ configuration.load do
     desc "Set standard permissions for Demonz servers"
     task :fixperms, :roles => :web, :except => { :no_release => true } do
       group_writable = fetch(:group_writable, true)
-      file_permissions = group_writable ? 775 : 755;
-      dir_permissions = group_writable ? 664 : 644;
+      dir_permissions = group_writable ? 775 : 755;
+      file_permissions = group_writable ? 664 : 644;
 
       # chmod the files and directories.
       set_perms_dirs("#{latest_release}", dir_permissions)
@@ -430,8 +430,8 @@ configuration.load do
         # SET/RESET PERMISSIONS
         # --------------------------
         group_writable = fetch(:group_writable, true)
-        file_permissions = group_writable ? 775 : 755;
-        dir_permissions = group_writable ? 664 : 644;
+        dir_permissions = group_writable ? 775 : 755;
+        file_permissions = group_writable ? 664 : 644;
 
         set_perms_dirs("#{tmp_backups_path}/#{release_name}", file_permissions)
         set_perms_files("#{tmp_backups_path}/#{release_name}", dir_permissions)
@@ -486,8 +486,8 @@ configuration.load do
 
         # fix permissions on the the files and directories before removing them
         group_writable = fetch(:group_writable, true)
-        file_permissions = group_writable ? 775 : 755;
-        dir_permissions = group_writable ? 664 : 644;
+        dir_permissions = group_writable ? 775 : 755;
+        file_permissions = group_writable ? 664 : 644;
 
         archives.split(" ").each do |backup|
           set_perms_dirs("#{backup}", dir_permissions)
