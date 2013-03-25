@@ -425,8 +425,12 @@ configuration.load do
         # --------------------------
         # SET/RESET PERMISSIONS
         # --------------------------
-        set_perms_dirs("#{tmp_backups_path}/#{release_name}", 755)
-        set_perms_files("#{tmp_backups_path}/#{release_name}", 644)
+        group_writable = fetch(:group_writable, true)
+        file_permissions = group_writable ? 775 : 755;
+        dir_permissions = group_writable ? 664 : 644;
+
+        set_perms_dirs("#{tmp_backups_path}/#{release_name}", file_permissions)
+        set_perms_files("#{tmp_backups_path}/#{release_name}", dir_permissions)
 
         # create the tarball of the previous release
         set :archive_name, "release_B4_#{release_name}.tar.gz"
@@ -477,9 +481,13 @@ configuration.load do
           File.join(backups_path, backup) }.join(" ")
 
         # fix permissions on the the files and directories before removing them
+        group_writable = fetch(:group_writable, true)
+        file_permissions = group_writable ? 775 : 755;
+        dir_permissions = group_writable ? 664 : 644;
+
         archives.split(" ").each do |backup|
-          set_perms_dirs("#{backup}", 755)
-          set_perms_files("#{backup}", 644)
+          set_perms_dirs("#{backup}", dir_permissions)
+          set_perms_files("#{backup}", file_permissions)
         end
 
         try_sudo "rm -rf #{archives}"
