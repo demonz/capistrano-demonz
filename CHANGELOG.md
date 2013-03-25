@@ -1,6 +1,10 @@
-**Current version:** 0.0.23
+**Current version:** 0.0.24
 
 ## Changes ##
+### 0.0.24 ###
+* Makes sure the settings file is owned by the correct user after copying it.
+* Sets proper group permissions on files/directories now.
+
 ### 0.0.23 ###
 * Fixes newline issue on rolling back the RELEASES file.
 
