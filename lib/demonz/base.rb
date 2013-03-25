@@ -169,9 +169,13 @@ configuration.load do
 
     desc "Set standard permissions for Demonz servers"
     task :fixperms, :roles => :web, :except => { :no_release => true } do
+      group_writable = fetch(:group_writable, true)
+      file_permissions = group_writable ? 775 : 755;
+      dir_permissions = group_writable ? 664 : 644;
+
       # chmod the files and directories.
-      set_perms_dirs("#{latest_release}")
-      set_perms_files("#{latest_release}")
+      set_perms_dirs("#{latest_release}", dir_permissions)
+      set_perms_files("#{latest_release}", file_permissions)
     end
 
     desc "Test: Task used to verify Capistrano is working. Prints operating system name."

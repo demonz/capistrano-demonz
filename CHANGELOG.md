@@ -1,6 +1,9 @@
-**Current version:** 0.0.24
+**Current version:** 0.0.25
 
 ## Changes ##
+### 0.0.25 ###
+* Further fixing of group permissions.
+
 ### 0.0.24 ###
 * Makes sure the settings file is owned by the correct user after copying it.
 * Sets proper group permissions on files/directories now.
