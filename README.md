@@ -9,6 +9,8 @@ Make sure you have ruby and RubyGems installed, then run (you may need to prefix
     $ gem install capistrano-demonz
 
 ## Usage
+### Installation of settings files
+This is to be run once per project, to set up the capistrano-demonz speficic data including environment information (UAT, Live server...)
 
 In your Drupal application's directory, run:
 
@@ -96,13 +98,16 @@ Once all of that's done, run the following command (**note: this will create a f
 
 When that finishes, log on to (each of?) the remote server(s). Copy your site's files directory to `/var/www/mysite.com/shared/default/files` and put a copy of your site's settings file at `/var/www/mysite.com/shared/settings.{stage}.php`. Replace `{stage}` with the stage that this server represents (staging, production, etc.).
 
-You can then run a deployment with:
+
+### Usual deployment
+
+Run a deployment with:
 
     $ cap deploy -S tag="mygittag"
 
 If you do not specify a Git tag, it will use the HEAD revision of your current repository and prompt you to create a tag.
 
-Additionally, if this is a fresh deployment, the script will prompt you for a gzipped SQL dump, try and have this ready. An easy way to do this is:
+Additionally, if this is the first deployment, the script will prompt you for a gzipped SQL dump, try and have this ready. An easy way to do this is:
 
     $ drush sql-dump --result-file --gzip
 
