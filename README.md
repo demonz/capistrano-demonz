@@ -119,6 +119,14 @@ To delete completely a delivered release:
     
 And that's it!
 
+### Deploying to a different environment
+
+If you want to deploy to production instead of staging, run:
+
+```bash
+cap production deploy -S tag="gittag"
+```
+
 ## Contributing
 
 1. Fork it
