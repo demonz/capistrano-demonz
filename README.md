@@ -2,6 +2,8 @@
 
 Capistrano recipes developed for use by [Demonz Media](http://demonzmedia.com).
 
+[![Gem Version](https://badge.fury.io/rb/capistrano-demonz.png)](http://badge.fury.io/rb/capistrano-demonz)
+
 ## Installation
 
 Make sure you have ruby and RubyGems installed, then run (you may need to prefix this with `sudo`):
